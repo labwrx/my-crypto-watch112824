@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Gainers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top Crypto Gainers</h1>
+    <p>Displaying the next 5 cryptos with over 20% gains in the last hour.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Symbol</th>
+                <th>Current Price ($)</th>
+                <th>24h Change (%)</th>
+            </tr>
+        </thead>
+        <tbody id="crypto-table">
+            <tr>
+                <td colspan="5">Loading data...</td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        const apiKey = "YOUR_API_KEY"; // Replace with your API key
+        const apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false";
+
+        async function fetchCryptoData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                // Filter cryptos with more than 20% gain in the last 24 hours
+                const topGainers = data.filter(coin => coin.price_change_percentage_24h > 20).slice(0, 5);
+
+                // Update the table
+                const tableBody = document.getElementById("crypto-table");
+                tableBody.innerHTML = "";
+
+                if (topGainers.length > 0) {
+                    topGainers.forEach((coin, index) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${coin.name}</td>
+                            <td>${coin.symbol.toUpperCase()}</td>
+                            <td>${coin.current_price.toFixed(2)}</td>
+                            <td>${coin.price_change_percentage_24h.toFixed(2)}%</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = "<tr><td colspan='5'>No gainers over 20% in the last hour.</td></tr>";
+                }
+            } catch (error) {
+                console.error("Error fetching crypto data:", error);
+                document.getElementById("crypto-table").innerHTML = "<tr><td colspan='5'>Error loading data.</td></tr>";
+            }
+        }
+
+        // Fetch data initially and refresh every 5 minutes
+        fetchCryptoData();
+        setInterval(fetchCryptoData, 5 * 60 * 1000); // 5 minutes
+    </script>
+</body>
+</html>
